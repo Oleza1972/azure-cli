@@ -3,7 +3,6 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-from __future__ import print_function
 import argparse
 
 from azure.cli.core.commands import ExtensionCommandSource
@@ -201,7 +200,15 @@ class AzCliHelp(CLIPrintMixin, CLIHelp):
             contents = [item for item in command.split(' ') if item]
             return ' '.join(contents).strip()
 
-        return [strip_command(example.command) for example in help_file.examples]
+        examples = []
+        for example in help_file.examples:
+            if example.command and example.name:
+                examples.append({
+                    'command': strip_command(example.command),
+                    'description': example.name
+                })
+
+        return examples
 
     def _register_help_loaders(self):
         import azure.cli.core._help_loaders as help_loaders

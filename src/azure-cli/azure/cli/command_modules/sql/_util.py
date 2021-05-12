@@ -44,6 +44,10 @@ def get_sql_server_blob_auditing_policies_operations(cli_ctx, _):
     return get_sql_management_client(cli_ctx).server_blob_auditing_policies
 
 
+def get_sql_server_dev_ops_audit_settings_operations(cli_ctx, _):
+    return get_sql_management_client(cli_ctx).server_dev_ops_audit_settings
+
+
 def get_sql_database_sensitivity_labels_operations(cli_ctx, _):
     return get_sql_management_client(cli_ctx).sensitivity_labels
 
@@ -78,6 +82,10 @@ def get_sql_encryption_protectors_operations(cli_ctx, _):
 
 def get_sql_managed_instance_encryption_protectors_operations(cli_ctx, _):
     return get_sql_management_client(cli_ctx).managed_instance_encryption_protectors
+
+
+def get_sql_server_trust_groups_operations(cli_ctx, _):
+    return get_sql_management_client(cli_ctx).server_trust_groups
 
 
 def get_sql_failover_groups_operations(cli_ctx, _):

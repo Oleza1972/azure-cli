@@ -66,7 +66,11 @@ examples:
   - name: Add to the backend address pool by using backend server IP address.
     text: |
         az network application-gateway address-pool update -g MyResourceGroup --gateway-name MyAppGateway -n MyAddressPool \\
-            --add backendAddresses "{ \"ip_address\": \"{10.0.0.13}\" }"
+            --add backendAddresses ipAddress=10.0.0.4
+  - name: Remove an existing ip of the backend address pool("0" is the index).
+    text: |
+        az network application-gateway address-pool update -g MyResourceGroup --gateway-name MyAppGateway -n MyAddressPool \\
+            --remove backendAddresses 0
 """
 
 helps['network application-gateway auth-cert'] = """
@@ -123,6 +127,32 @@ examples:
 helps['network application-gateway create'] = """
 type: command
 short-summary: Create an application gateway.
+parameters:
+  - name: --trusted-client-cert
+    short-summary: The application gateway trusted client certificate.
+    long-summary: |
+        Usage: --trusted-client-certificates name=client1 data=client.cer
+
+        name: Required. Name of the trusted client certificate that is unique within an Application Gateway
+        data: Required. Certificate public data.
+
+        Multiple trusted client certificates can be specified by using more than one `--trusted-client-certificates` argument.
+  - name: --ssl-profile
+    short-summary: The application gateway ssl profiles.
+    long-summary: |
+        Usage: --ssl-profile name=MySslProfile client-auth-configuration=True cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 policy-type=Custom min-protocol-version=TLSv1_0
+
+        name: Required. Name of the SSL profile that is unique within an Application Gateway.
+        polic-name: Name of Ssl Policy.
+        policy-type: Type of Ssl Policy.
+        min-protocol-version: Minimum version of Ssl protocol to be supported on application gateway.
+        cipher-suites: Ssl cipher suites to be enabled in the specified order to application gateway.
+        disabled-ssl-protocols: Space-separated list of protocols to disable.
+        trusted-client-certificates: Array of references to application gateway trusted client certificates.
+        client-auth-configuration: Client authentication configuration of the application gateway resource.
+
+        Multiple ssl profiles can be specified by using more than one `--ssl-profile` argument.
+
 examples:
   - name: Create an application gateway with VMs as backend servers.
     text: |
@@ -839,6 +869,9 @@ short-summary: Get information on the backend health of an application gateway.
 examples:
   - name: Show backend health of an application gateway.
     text: az network application-gateway show-backend-health -g MyResourceGroup -n MyAppGateway
+  - name: Show backend health of an application gateway for given combination of backend pool and http setting.
+    text: |-
+        az network application-gateway show-backend-health -g MyResourceGroup -n MyAppGateway --host-name-from-http-settings --path /test --timeout 100 --http-settings appGatewayBackendHttpSettings --address-pool appGatewayBackendPool
 """
 
 helps['network application-gateway ssl-cert'] = """
@@ -1458,6 +1491,64 @@ short-summary: Place the CLI in a waiting state until a condition of the applica
 examples:
   - name: Place the CLI in a waiting state until the application gateway is created.
     text: az network application-gateway wait -g MyResourceGroup -n MyAppGateway --created
+"""
+
+helps['network application-gateway client-cert'] = """
+type: group
+short-summary: Manage trusted client certificate of application gateway.
+"""
+
+helps['network application-gateway client-cert add'] = """
+type: command
+short-summary: Add trusted client certificate of the application gateway.
+examples:
+  - name: Add trusted client certificate for an existing application gateway.
+    text: az network application-gateway client-cert add --gateway-name MyAppGateway -g MyResourceGroup --name MyCert --data Cert.cer
+"""
+
+helps['network application-gateway client-cert remove'] = """
+type: command
+short-summary: Remove an existing trusted client certificate of the application gateway.
+examples:
+  - name: Remove a trusted client certificate for an existing application gateway.
+    text: az network application-gateway client-cert remove --gateway-name MyAppGateway -g MyResourceGroup --name MyCert
+"""
+
+helps['network application-gateway client-cert list'] = """
+type: command
+short-summary: List the existing trusted client certificate of the application gateway.
+examples:
+  - name: list all the trusted client certificate for an existing application gateway.
+    text: az network application-gateway client-cert list --gateway-name MyAppGateway -g MyResourceGroup
+"""
+
+helps['network application-gateway ssl-profile'] = """
+type: group
+short-summary: Manage ssl profiles of application gateway.
+"""
+
+helps['network application-gateway ssl-profile add'] = """
+type: command
+short-summary: Add ssl profiles of the application gateway.
+examples:
+  - name: Add ssl profile for an existing application gateway.
+    text: az network application-gateway ssl-profile add --gateway-name MyAppGateway -g MyResourceGroup --name MySslProfile
+"""
+
+helps['network application-gateway ssl-profile remove'] = """
+type: command
+short-summary: Remove an existing ssl profiles of the application gateway.
+examples:
+  - name: Remove ssl profile for an existing application gateway.
+    text: az network application-gateway ssl-profile remove --gateway-name MyAppGateway -g MyResourceGroup --name MySslProfile
+"""
+
+helps['network application-gateway ssl-profile list'] = """
+type: command
+short-summary: List the existing ssl profiles of the application gateway.
+examples:
+  - name: List all the ssl profile for an existing application gateway.
+    text: az network application-gateway ssl-profile list --gateway-name MyAppGateway -g MyResourceGroup
 """
 
 helps['network asg'] = """
@@ -2644,6 +2735,15 @@ examples:
             --path primary --peering-name AzurePrivatePeering
 """
 
+helps['network express-route list-route-tables-summary'] = """
+type: command
+short-summary: Show the current routing table summary of an ExpressRoute circuit peering.
+examples:
+  - name: List Route Table Summary
+    text: |
+        az network express-route list-route-tables-summary -g MyResourceGroup -n MyCircuit --path primary --peering-name AzurePrivatePeering
+"""
+
 helps['network express-route list-service-providers'] = """
 type: command
 short-summary: List available ExpressRoute service providers.
@@ -2688,6 +2788,15 @@ type: command
 short-summary: Get the details of an ExpressRoute circuit connection.
 """
 
+helps['network express-route peering connection list'] = """
+type: command
+short-summary: List all global reach connections associated with a private peering in an express route circuit.
+examples:
+  - name: List ExpressRouteCircuit Connection
+    text: |
+        az network express-route peering connection list --circuit-name MyCircuit --peering-name MyPeering --resource-group MyResourceGroup
+"""
+
 helps['network express-route peering create'] = """
 type: command
 short-summary: Create peering settings for an ExpressRoute circuit.
@@ -2698,6 +2807,11 @@ examples:
             --peering-type MicrosoftPeering --peer-asn 10002 --vlan-id 103 \\
             --primary-peer-subnet 101.0.0.0/30 --secondary-peer-subnet 102.0.0.0/30 \\
             --advertised-public-prefixes 101.0.0.0/30
+  - name: Create Microsoft Peering settings with IPv6 configuration.
+    text: |
+        az network express-route peering create -g MyResourceGroup --circuit-name MyCircuit \\
+            --peering-type AzurePrivatePeering --peer-asn 10002 --vlan-id 103 --ip-version ipv6\\
+            --primary-peer-subnet 2002:db00::/126 --secondary-peer-subnet 2003:db00::/126
   - name: Create peering settings for an ExpressRoute circuit. (autogenerated)
     text: |
         az network express-route peering create --circuit-name MyCircuit --peer-asn 10002 --peering-type AzurePublicPeering --primary-peer-subnet 101.0.0.0/30 --resource-group MyResourceGroup --secondary-peer-subnet 102.0.0.0/30 --shared-key Abc123 --vlan-id 103
@@ -2750,6 +2864,15 @@ examples:
     text: |
         az network express-route peering update --circuit-name MyCircuit --name MyPeering --peer-asn 10002 --primary-peer-subnet 2002:db00::/126 --resource-group MyResourceGroup --secondary-peer-subnet 2003:db00::/126 --shared-key Abc123 --vlan-id 103
     crafted: true
+"""
+
+helps['network express-route peering get-stats'] = """
+type: command
+short-summary: Get all traffic stats of an ExpressRoute peering.
+examples:
+  - name: Get ExpressRoute Circuit Peering Traffic Stats
+    text: |
+        az network express-route peering get-stats --circuit-name MyCircuit --name MyPeering --resource-group MyResourceGroup
 """
 
 helps['network express-route port'] = """
@@ -3224,7 +3347,9 @@ examples:
 helps['network lb'] = """
 type: group
 short-summary: Manage and configure load balancers.
-long-summary: To learn more about Azure Load Balancer visit https://docs.microsoft.com/azure/load-balancer/load-balancer-get-started-internet-arm-cli
+long-summary: |
+  [Coming breaking change] In the coming release, the default behavior will be changed. When sku is Standard and in zone-redundant regions, the default 'zones' of 'frontendIPConfigurations' will display as 'zones:[1,2,3]' instead of 'zones:null'.
+  To learn more about Azure Load Balancer visit https://docs.microsoft.com/azure/load-balancer/load-balancer-get-started-internet-arm-cli
 """
 
 helps['network lb wait'] = """
@@ -3246,12 +3371,15 @@ type: command
 short-summary: Create an address pool.
 parameters:
   - name: --backend-address
-    short-summary: Backend addresses information for backend address pool. If it's used, --vnet is also required.
+    short-summary: Backend addresses information for backend address pool. If it's used, --vnet is required or subnet is required.
     long-summary: |
-        Usage: --backend-address name=addr1 ip-address=10.0.0.1 --vnet MyVnet
+        Usage1: --backend-address name=addr1 ip-address=10.0.0.1 --vnet MyVnet
+        Usage2: --backend-address name=addr1 ip-address=10.0.0.1 subnet=/subscriptions/000/resourceGroups/MyRg/providers/Microsoft.Network/virtualNetworks/vnet/subnets/subnet1
+        Usage3: --backend-address name=addr1 ip-address=10.0.0.1 subnet=subnet1 --vnet MyVnet
 
         name: Required. The name of the backend address.
         ip-address: Required. Ip Address within the Virtual Network.
+        subnet: Name or Id of the subnet.
 
         Multiple backend addresses can be specified by using more than one `--backend-address` argument.
   - name: --backend-addresses-config-file
@@ -3270,6 +3398,16 @@ parameters:
             "name": "address2",
             "virtualNetwork": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_lb_address_pool_addresses000001/providers/Microsoft.Network/virtualNetworks/clitestvnet",
             "ipAddress": "10.0.0.5"
+          },
+          {
+            "name": "address3",
+            "subnet": "subnet3",
+            "ipAddress": "10.0.0.6"
+          },
+          {
+            "name": "address4",
+            "subnet": "/subscriptions/000/resourceGroups/MyRg/providers/Microsoft.Network/virtualNetworks/vnet/subnets/subnet4",
+            "ipAddress": "10.0.0.7"
           }
         ]
 examples:
@@ -3316,6 +3454,8 @@ short-summary: Add one backend address into the load balance backend address poo
 examples:
   - name: Add one backend address into the load balance backend address pool.
     text: az network lb address-pool address add -g MyResourceGroup --lb-name MyLb --pool-name MyAddressPool -n MyAddress --vnet MyVnet --ip-address 10.0.0.1
+  - name: Add one backend address into the load balance backend address pool with subnet.
+    text: az network lb address-pool address add -g MyResourceGroup --lb-name MyLb --pool-name MyAddressPool -n MyAddress --subnet /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MyRg/providers/Microsoft.Network/virtualNetworks/vnet/subnets/subnet2 --ip-address 10.0.0.1
 """
 
 helps['network lb address-pool address remove'] = """
@@ -3552,6 +3692,14 @@ short-summary: List load balancers.
 examples:
   - name: List load balancers.
     text: az network lb list -g MyResourceGroup
+"""
+
+helps['network lb list-nic'] = """
+type: command
+short-summary: List associated load balancer network interfaces.
+examples:
+  - name: List associated load balancer network interfaces.
+    text: az network lb list-nic -g MyResourceGroup --name MyLb
 """
 
 helps['network lb outbound-rule'] = """
@@ -4517,8 +4665,6 @@ long-summary: >
 helps['network public-ip create'] = """
 type: command
 short-summary: Create a public IP address.
-long-summary: >
-    [Coming breaking change] In the coming release, the default behavior will be changed as follows when sku is Standard and zone is not provided: For zonal regions, you will get a zone-redundant IP indicated by zones:["1","2","3"]; For non-zonal regions, you will get a non zone-redundant IP indicated by zones:[].
 examples:
   - name: Create a basic public IP resource.
     text: az network public-ip create -g MyResourceGroup -n MyIp
@@ -5313,6 +5459,8 @@ short-summary: Update a virtual network.
 examples:
   - name: Update a virtual network with the IP address of a DNS server.
     text: az network vnet update -g MyResourceGroup -n MyVNet --dns-servers 10.2.0.8
+  - name: Update a virtual network to delete DNS server.
+    text: az network vnet update -g MyResourceGroup -n MyVNet --dns-servers ''
   - name: Update a virtual network. (autogenerated)
     text: |
         az network vnet update --address-prefixes 40.1.0.0/24 --name MyVNet --resource-group MyResourceGroup
@@ -5340,6 +5488,11 @@ examples:
         az network vnet-gateway create -g MyResourceGroup -n MyVnetGateway --public-ip-address MyGatewayIp \\
             --vnet MyVnet --gateway-type Vpn --sku VpnGw1 --vpn-type RouteBased --address-prefixes 40.1.0.0/24 \\
             --client-protocol IkeV2 SSTP --radius-secret 111_aaa --radius-server 30.1.1.15 --vpn-gateway-generation Generation1
+
+  - name: >
+        Create a basic virtual network gateway with multi authentication
+    text: |
+        az network vnet-gateway create -g MyResourceGroup -n MyVnetGateway --public-ip-address MyGatewayIp --vnet MyVnet --gateway-type Vpn --sku VpnGw1 --vpn-type RouteBased --address-prefixes 40.1.0.0/24 --client-protocol OpenVPN --radius-secret 111_aaa --radius-server 30.1.1.15 --aad-issuer https://sts.windows.net/00000-000000-00000-0000-000/ --aad-tenant https://login.microsoftonline.com/000 --aad-audience 0000-000 --root-cert-name root-cert --root-cert-data "root-cert.cer" --vpn-auth-type AAD Certificate Radius
   - name: Create a virtual network gateway. (autogenerated)
     text: |
         az network vnet-gateway create --gateway-type Vpn --location westus2 --name MyVnetGateway --no-wait --public-ip-addresses myVGPublicIPAddress --resource-group MyResourceGroup --sku Basic --vnet MyVnet --vpn-type PolicyBased
@@ -5357,6 +5510,14 @@ long-summary: >
 examples:
   - name: Delete a virtual network gateway.
     text: az network vnet-gateway delete -g MyResourceGroup -n MyVnetGateway
+"""
+
+helps['network vnet-gateway disconnect-vpn-connections'] = """
+type: command
+short-summary: Disconnect vpn connections of virtual network gateway.
+examples:
+  - name: Disconnect vpn connections of virtual network gateway.
+    text: az network vnet-gateway disconnect-vpn-connections -g MyResourceGroup -n MyVnetGateway --vpn-connections MyConnetion1ByName MyConnection2ByID
 """
 
 helps['network vnet-gateway ipsec-policy'] = """
@@ -5422,6 +5583,14 @@ short-summary: This operation retrieves a list of routes the virtual network gat
 examples:
   - name: Retrieve a list of learned routes.
     text: az network vnet-gateway list-learned-routes -g MyResourceGroup -n MyVnetGateway
+"""
+
+helps['network vnet-gateway show-supported-devices'] = """
+type: command
+short-summary: Get a xml format representation for supported vpn devices.
+examples:
+  - name: Get a xml format representation for supported vpn devices.
+    text: az network vnet-gateway show-supported-devices -g MyResourceGroup -n MyVnetGateway
 """
 
 helps['network vnet-gateway reset'] = """
@@ -5509,6 +5678,27 @@ examples:
     crafted: true
 """
 
+helps['network vnet-gateway packet-capture'] = """
+type: group
+short-summary: Manage packet capture on a virtual network gateway.
+"""
+
+helps['network vnet-gateway packet-capture start'] = """
+type: command
+short-summary: Start packet capture on a virtual network gateway.
+examples:
+  - name: Start packet capture on a virtual network gateway.
+    text: az network vnet-gateway packet-capture start -g MyResourceGroup -n MyVnetGateway
+"""
+
+helps['network vnet-gateway packet-capture stop'] = """
+type: command
+short-summary: Stop packet capture on a virtual network gateway.
+examples:
+  - name: Stop packet capture on a virtual network gateway.
+    text: az network vnet-gateway packet-capture stop -g MyResourceGroup -n MyVnetGateway --sas-url https://myStorageAct.blob.azure.com/artifacts?st=2019-04-10T22%3A12Z&se=2019-04-11T09%3A12Z&sp=rl&sv=2018-03-28&sr=c&sig=0000000000
+"""
+
 helps['network vnet-gateway vpn-client'] = """
 type: group
 short-summary: Download a VPN client configuration required to connect to Azure via point-to-site.
@@ -5536,6 +5726,38 @@ long-summary: The profile needs to be generated first using vpn-client generate 
 examples:
   - name: Get the pre-generated point-to-site VPN client of the virtual network gateway.
     text: az network vnet-gateway vpn-client show-url -g MyResourceGroup -n MyVnetGateway
+"""
+
+helps['network vnet-gateway vpn-client show-health'] = """
+type: command
+short-summary: Get the VPN client connection health detail per P2S client connection of the virtual network gateway.
+examples:
+  - name: Get the VPN client connection health detail per P2S client connection of the virtual network gateway.
+    text: az network vnet-gateway vpn-client show-health -g MyResourceGroup -n MyVnetGateway
+"""
+
+helps['network vnet-gateway vpn-client ipsec-policy'] = """
+type: group
+short-summary: Manage the VPN client connection ipsec-policy for P2S client connection of the virtual network gateway.
+"""
+
+helps['network vnet-gateway vpn-client ipsec-policy show'] = """
+type: command
+short-summary: Get the VPN client connection ipsec policy per P2S client connection of the virtual network gateway.
+examples:
+  - name: Get the VPN client connection ipsec policy per P2S client connection of the virtual network gateway.
+    text: az network vnet-gateway vpn-client ipsec-policy show -g MyResourceGroup -n MyVnetGateway
+"""
+
+helps['network vnet-gateway vpn-client ipsec-policy set'] = """
+type: command
+short-summary: Set the VPN client connection ipsec policy per P2S client connection of the virtual network gateway.
+examples:
+  - name: Set the VPN client connection ipsec policy per P2S client connection of the virtual network gateway.
+    text: |-
+        az network vnet-gateway vpn-client ipsec-policy set -g MyResourceGroup -n MyVnetGateway \
+        --dh-group DHGroup14 --ike-encryption AES256 --ike-integrity SHA384 --ipsec-encryption DES3 \
+        --ipsec-integrity GCMAES256 --pfs-group PFS2048 --sa-lifetime 27000 --sa-max-size 102400000
 """
 
 helps['network vnet-gateway wait'] = """
@@ -5671,10 +5893,20 @@ examples:
 
 helps['network vpn-connection list'] = """
 type: command
-short-summary: List all VPN connections in a resource group.
+short-summary: List all VPN connections.
 examples:
   - name: List all VPN connections in a resource group.
     text: az network vpn-connection list -g MyResourceGroup
+  - name: List all VPN connections in a virtual network gateway.
+    text: az network vpn-connection list -g MyResourceGroup --vnet-gateway MyVnetGateway
+"""
+
+helps['network vpn-connection list-ike-sas'] = """
+type: command
+short-summary: List IKE Security Associations for a VPN connection.
+examples:
+  - name: List IKE Security Associations for a VPN connection.
+    text: az network vpn-connection list-ike-sas -g MyResourceGroup -n MyConnection
 """
 
 helps['network vpn-connection shared-key'] = """
@@ -5736,6 +5968,35 @@ examples:
     text: |
         az network vpn-connection update --name MyConnection --resource-group MyResourceGroup --use-policy-based-traffic-selectors true
     crafted: true
+"""
+
+helps['network vpn-connection show-device-config-script'] = """
+type: command
+short-summary: Get a XML format representation for VPN connection device configuration script.
+examples:
+  - name: Get a XML format representation for VPN connection device configuration script.
+    text: az network vpn-connection show-device-config-script -g MyResourceGroup -n MyConnection --vendor "Cisco" --device-family "Cisco-ISR(IOS)" --firmware-version "Cisco-ISR-15.x--IKEv2+BGP"
+"""
+
+helps['network vpn-connection packet-capture'] = """
+type: group
+short-summary: Manage packet capture on a VPN connection.
+"""
+
+helps['network vpn-connection packet-capture start'] = """
+type: command
+short-summary: Start packet capture on a VPN connection.
+examples:
+  - name: Start packet capture on a VPN connection.
+    text: az network vpn-connection packet-capture start -g MyResourceGroup -n MyConnection
+"""
+
+helps['network vpn-connection packet-capture stop'] = """
+type: command
+short-summary: Stop packet capture on a VPN connection.
+examples:
+  - name: Stop packet capture on a VPN connection.
+    text: az network vpn-connection packet-capture stop -g MyResourceGroup -n MyConnection --sas-url https://myStorageAct.blob.azure.com/artifacts?st=2019-04-10T22%3A12Z&se=2019-04-11T09%3A12Z&sp=rl&sv=2018-03-28&sr=c&sig=0000000000
 """
 
 helps['network vrouter'] = """
@@ -5805,81 +6066,91 @@ short-summary: Delete a virtual router peering.
 
 helps['network routeserver'] = """
 type: group
-short-summary: Manage the virtual hub router.
+short-summary: Manage the route server.
 """
 
 helps['network routeserver create'] = """
 type: command
-short-summary: Create a virtual hub router.
+short-summary: Create a route server.
 examples:
-  - name: Create a virtual hub router.
+  - name: Create a route server.
     text: |
-      az network routeserver create --resource-group myresourcegroup --name myvirtualrouter --hosted-subnet my_subnet_id
+      az network routeserver create --resource-group myresourcegroup --name myrouteserver --hosted-subnet my_subnet_id
 """
 
 helps['network routeserver update'] = """
 type: command
-short-summary: Update a virtual hub router.
+short-summary: Update a route server.
 examples:
-  - name: Update a virtual hub router. (autogenerated)
+  - name: Update a route server.
     text: |
-        az network routeserver update --name myvirtualrouter --resource-group myresourcegroup --tags super_secure no_80 no_22
+        az network routeserver update --name myrouteserver --resource-group myresourcegroup --tags super_secure no_80 no_22
     crafted: true
 """
 
 helps['network routeserver show'] = """
 type: command
-short-summary: Show a virtual hub router.
+short-summary: Show a route server.
 """
 
 helps['network routeserver list'] = """
 type: command
-short-summary: List all virtual hub routers under a subscription or a resource group.
+short-summary: List all route servers under a subscription or a resource group.
 """
 
 helps['network routeserver delete'] = """
 type: command
-short-summary: Delete a virtual hub router under a resource group.
+short-summary: Delete a route server under a resource group.
+"""
+
+helps['network routeserver wait'] = """
+type: command
+short-summary: Place the CLI in a waiting state until a condition of the route server is met.
 """
 
 helps['network routeserver peering'] = """
 type: group
-short-summary: Manage the virtual hub router peering.
+short-summary: Manage the route server peering.
 """
 
 helps['network routeserver peering create'] = """
 type: command
-short-summary: Create a virtual hub router peering.
+short-summary: Create a route server peering.
 """
 
 helps['network routeserver peering update'] = """
 type: command
-short-summary: Update a virtual hub router peering.
+short-summary: Update a route server peering.
 """
 
 helps['network routeserver peering list'] = """
 type: command
-short-summary: List all virtual hub router peerings under a resource group.
+short-summary: List all route server peerings under a resource group.
 """
 
 helps['network routeserver peering show'] = """
 type: command
-short-summary: Show a virtual hub router peering
+short-summary: Show a route server peering
 """
 
 helps['network routeserver peering delete'] = """
 type: command
-short-summary: Delete a virtual hub router peering.
+short-summary: Delete a route server peering.
 """
 
 helps['network routeserver peering list-learned-routes'] = """
 type: command
-short-summary: List all routes the virtual hub bgp connection has learned.
+short-summary: List all routes the route server bgp connection has learned.
 """
 
 helps['network routeserver peering list-advertised-routes'] = """
 type: command
-short-summary: List all routes the virtual hub bgp connection is advertising to the specified peer.
+short-summary: List all routes the route server bgp connection is advertising to the specified peer.
+"""
+
+helps['network routeserver peering wait'] = """
+type: command
+short-summary: Place the CLI in a waiting state until a condition of the route server peering is met.
 """
 
 helps['network watcher'] = """

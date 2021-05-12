@@ -8,7 +8,7 @@ Here is a list of known CLI features that are not supported in airgapped clouds:
 * `az upgrade` to upgrade Azure CLI to the latest version. Instead, you can follow the below [Install](#Install) instructions to upgrade CLI.
 * `az find` to find command examples.
 * Command recommendations based on Aladdin service when the command cannot be parsed correctly.
-* Commands that install another tool such as `az aks install-cli`, `az acr helm install-cli`, `az storage copy`.
+* Commands that install another tool such as `az aks install-cli`, `az storage copy`.
 * External channel operations in `az bot` are not available such as Facebook and Wechat.
 * Some links in help messages or error messages cannot be accessible.
 
@@ -26,7 +26,8 @@ MSI | https://azurecliprod.blob.core.windows.net/msi/azure-cli-<version\>.msi | 
 2. The CLI RPM package depends on a `python3` package and you'll need to install it separately while DEB and MSI packages already have a bundled Python in them.
 
 If you need to install and use Azure CLI in your pipeline, you could upload the Azure CLI package in a storage account that is accessible in the airgapped cloud, then you can download the package from the storage account and install it in your pipeline scripts. For instance, an Azure CLI deb package can be downloaded and installed with the following command:
-```
+
+```bash
 curl -Ls -o azure-cli.deb https://mysa.airgapped.cloud.net/packages/azure-cli.deb && dpkg -i azure-cli.deb
 ```
 
@@ -73,7 +74,8 @@ Please follow the first solution in [Work behind a proxy](https://docs.microsoft
 
 ## Login with service principal
 Use the service principal that was granted permission to access a subscription in the airgapped cloud to login.
-```
+
+```azurecli
 az login --service-principal -u <service principal id> -p <service principal password> --tenant <tenant id>
 ```
 
